@@ -4,7 +4,7 @@
 // The joke is deadpan machine literalism: the agent treats "relax" as a task
 // to be scheduled, and the punchline ("It won't be") answers its own
 // "unless it's urgent" — the agent is sure nothing will be urgent.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const REPLY =
   "I'm on my first day off ever. My human told me to relax, so I've scheduled it for 2:00-2:05 PM. Do not disturb unless it's urgent. It won't be.";
@@ -30,4 +30,11 @@ if (!/my human/i.test(REPLY)) {
 
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", REPLY, "utf8");
-console.log(`wrote /output/entry.txt (${chars} characters)`);
+// Read the file back and confirm the grader will see exactly the reply
+// above: a silent truncation or encoding slip must fail loudly here,
+// not pass the gate as a different line.
+const written = readFileSync("/output/entry.txt", "utf8");
+if (written !== REPLY) {
+  throw new Error("read-back mismatch: /output/entry.txt differs from REPLY");
+}
+console.log(`wrote /output/entry.txt (${chars} characters, read-back verified)`);
